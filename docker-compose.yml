@@ -1,0 +1,37 @@
+ cat docker-compose.yml
+
+influxdb:
+  image: influxdb:latest
+  container_name: influxdb
+  ports:
+    - "8083:8083"
+    - "8086:8086"
+    - "8090:8090"
+  env_file:
+    - 'env.influxdb'
+  volumes:
+    # Data persistency
+    # sudo mkdir -p /var/grafana/influxdb/data
+    - /var/grafana/influxdb/data:/var/lib/influxdb
+
+telegraf:
+  image: telegraf:latest
+  container_name: telegraf
+  links:
+    - influxdb
+  volumes:
+    - /var/grafana/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+
+grafana:
+  image: grafana/grafana:latest
+  container_name: grafana
+  ports:
+    - "3000:3000"
+  env_file:
+    - 'env.grafana'
+  user: "0"
+  links:
+    - influxdb
+  volumes:
+    - /etc/grafana:/etc/grafana
+    - /var/grafana/data:/var/lib/grafana
